@@ -48,7 +48,6 @@ public class Protocol {
     public static final int RECETA_SEARCH_NOMBREPACIENTE = 604;
     public static final int RECETA_FILTRAR_ESTADO = 605;
     public static final int RECETA_FINDALL_CON_PRESCRIPCIONES = 606;
-    public static final int RECETA_FINDALL = 607;
 
     public static final int MEDICO_GENERAR_NUEVO_ID = 108;
 
@@ -58,7 +57,7 @@ public class Protocol {
 
     public static final int PACIENTE_GENERAR_NUEVO_ID = 408;
 
-    public static final int RECETA_GENERAR_NUEVO_ID = 607;
+    public static final int RECETA_GENERAR_NUEVO_COD = 607;
 
     public static final int LOGIN = 801;
     public static final int CAMBIAR_CLAVE = 802;

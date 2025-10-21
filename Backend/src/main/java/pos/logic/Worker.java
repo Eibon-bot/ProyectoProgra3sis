@@ -86,7 +86,27 @@ public class Worker {
                             os.writeObject(lm);
                         } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
                         break;
+                    case Protocol.MEDICO_SEARCH_ID:
+                        try {
+                            Medico criterio = (Medico) is.readObject();
+                            Medico result = (Medico) service.searchMedicoId(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
 
+                    case Protocol.MEDICO_SEARCH_NOMBRE:
+                        try {
+                            Medico criterio = (Medico) is.readObject();
+                            List<Medico> result = service.searchMedicoNombre(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
                     // ================== FARMACÉUTICOS ==================
                     case Protocol.FARMA_CREATE:
                         try {
@@ -116,6 +136,28 @@ public class Worker {
                             os.writeInt(Protocol.ERROR_NO_ERROR);
                         } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
                         break;
+                    case Protocol.FARMA_SEARCH_ID:
+                        try {
+                            Farmaceutico criterio = (Farmaceutico) is.readObject();
+                            Farmaceutico result = (Farmaceutico) service.searchFarmaceuticoId(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
+                    case Protocol.FARMA_SEARCH_NOMBRE:
+                        try {
+                            Farmaceutico criterio = (Farmaceutico) is.readObject();
+                            List<Farmaceutico> result = service.searchFarmaceuticoNombre(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
 
                     case Protocol.FARMA_FINDALL:
                         try {
@@ -194,6 +236,49 @@ public class Worker {
                             os.writeInt(Protocol.ERROR_NO_ERROR);
                         } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
                         break;
+                    case Protocol.MEDICAMENTO_SEARCH_COD:
+                        try {
+                            Medicamento criterio = (Medicamento) is.readObject();
+                            Medicamento result = (Medicamento) service.searchMedicamentoCod(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
+                    case Protocol.MEDICAMENTO_SEARCH_NOMBRE:
+                        try {
+                            Medicamento criterio = (Medicamento) is.readObject();
+                            List<Medicamento> result = service.searchMedicamentoNombre(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+                    case Protocol.MEDICAMENTO_FIND_BY_NOMBRE:
+                        try {
+                            String nombre = (String) is.readObject();
+                            Medicamento result = service.findMedicamentoByNombre(nombre);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
+                    case Protocol.MEDICAMENTO_FIND_BY_CODIGO:
+                        try {
+                            String codigo = (String) is.readObject();
+                            Medicamento result = service.findMedicamentoByCodigo(codigo);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
 
                     case Protocol.MEDICAMENTO_FINDALL:
                         try {
@@ -233,6 +318,30 @@ public class Worker {
                         } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
                         break;
 
+                    case Protocol.PACIENTE_SEARCH_ID:
+                        try {
+                            Paciente criterio = (Paciente) is.readObject();
+                            Paciente result = (Paciente) service.searchPacienteId(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
+                    case Protocol.PACIENTE_SEARCH_NOMBRE:
+                        try {
+                            Paciente criterio = (Paciente) is.readObject();
+                            List<Paciente> result = service.searchPacienteNombre(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
+
+
                     case Protocol.PACIENTE_FINDALL:
                         try {
                             List<Paciente> lp = service.findAllPaciente();
@@ -254,6 +363,38 @@ public class Worker {
                             service.updateReceta((Receta) is.readObject());
                             os.writeInt(Protocol.ERROR_NO_ERROR);
                         } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
+                        break;
+                    case Protocol.RECETA_SEARCH_IDPACIENTE:
+                        try {
+                            Receta criterio = (Receta) is.readObject();
+                            List<Receta> result = service.searchRecetaPorIdPaciente(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
+                    case Protocol.RECETA_SEARCH_NOMBREPACIENTE:
+                        try {
+                            Receta criterio = (Receta) is.readObject();
+                            List<Receta> result = service.searchRecetaPorNombrePaciente(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
+                        break;
+
+                    case Protocol.RECETA_FILTRAR_ESTADO:
+                        try {
+                            Receta criterio = (Receta) is.readObject();
+                            List<Receta> result = service.filtrarRecetaPorEstado(criterio);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                            os.writeObject(result);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
                         break;
 
                     case Protocol.RECETA_FINDALL_CON_PRESCRIPCIONES:
