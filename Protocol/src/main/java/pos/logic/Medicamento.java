@@ -1,5 +1,7 @@
 package pos.logic;
-public class Medicamento {
+import java.io.Serializable;
+import java.util.Objects;
+public class Medicamento implements Serializable {
 
     private String codigo;
 
