@@ -22,8 +22,8 @@ public class Model extends AbstractModel {
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         super.addPropertyChangeListener(listener);
-//        firePropertyChange(CURRENT);
-//        firePropertyChange(LIST);
+        firePropertyChange(CURRENT);
+        firePropertyChange(LIST);
     }
 
     public Paciente getCurrent() { return current; }
