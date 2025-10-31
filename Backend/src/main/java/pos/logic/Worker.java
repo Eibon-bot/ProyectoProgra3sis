@@ -418,12 +418,23 @@ public class Worker {
                             String id = (String) is.readObject();
                             String clave = (String) is.readObject();
                             Usuario u = service.login(id, clave);
+
+                            srv.sidToUser.put(sid, u.getId());
+                            srv.byUser.put(u.getId(), this);
+
                             os.writeInt(Protocol.ERROR_NO_ERROR);
-                            srv.deliver_message(this,"Usuario " + u.getNombre() + " se a conectado."
-                            );
                             os.writeObject(u);
-                        } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
+                            os.flush();
+
+                            srv.broadcastUserJoined(u.getId());
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
                         break;
+
+
+
+
 
                     case Protocol.CAMBIAR_CLAVE:
                         try {
@@ -449,14 +460,61 @@ public class Worker {
             }
         }
     }
-    public synchronized void deliver_message(String message) {
-        if (as != null) {
-            try {
-                aos.writeInt(Protocol.DELIVER_MESSAGE);
-                aos.writeObject(message);
-                aos.flush();
-            } catch (Exception e) {
-            }
-        }
+
+
+
+
+
+
+
+    public synchronized void sendAsyncUserJoined(String userId){
+        if (aos == null) return;
+        try {
+            aos.writeInt(Protocol.USER_JOINED);
+            aos.writeObject(userId);
+            aos.flush();
+        } catch(Exception ignored){}
     }
+
+    public synchronized void sendAsyncUserLeft(String userId){
+        if (aos == null) return;
+        try {
+            aos.writeInt(Protocol.USER_LEFT);
+            aos.writeObject(userId);
+            aos.flush();
+        } catch(Exception ignored){}
+    }
+
+    public synchronized void sendAsyncUserList(List<String> users){
+        if (aos == null) return;
+        try {
+            aos.writeInt(Protocol.USER_LIST);
+            aos.writeObject(users);
+            aos.flush();
+        } catch(Exception ignored){}
+    }
+
+    public synchronized void deliver_message(String fromId, String text){
+        if (aos == null) return;
+        try {
+            aos.writeInt(Protocol.DELIVER_MESSAGE);
+            aos.writeObject(fromId);
+            aos.writeObject(text);
+            aos.flush();
+        } catch(Exception ignored){}
+    }
+
+
+
+
+//    public synchronized void deliver_message(String message) {
+//        if (as != null) {
+//            try {
+//                aos.writeInt(Protocol.DELIVER_MESSAGE);
+//                aos.writeObject(message);
+//                aos.flush();
+//            } catch (Exception e) {
+//            }
+//        }
+//    }
 }

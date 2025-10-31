@@ -72,5 +72,19 @@ public class TableModelConectados extends AbstractTableModel {
         }
         return out;
     }
+
+    @SuppressWarnings("unchecked")
+    public void setRows(java.util.List<String> newRows) {
+        this.rows = (newRows == null) ? new java.util.ArrayList<>() : new java.util.ArrayList<>(newRows);
+        fireTableDataChanged();
+    }
+
+
+
+    public void setTieneMensajes(String id, boolean v){
+        marcados.put(id, v);
+        fireTableDataChanged();
+    }
+
 }
 

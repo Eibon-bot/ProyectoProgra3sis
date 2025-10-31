@@ -109,14 +109,46 @@ public class ChatView implements PropertyChangeListener {
 
     }
 
+
+
+
+    private TableModelConectados ensureTableModel() {
+        if (!(tableConectados.getModel() instanceof TableModelConectados)) {
+            tableConectados.setModel(new TableModelConectados(
+                    new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
+                    new java.util.ArrayList<>()
+            ));
+        }
+        return (TableModelConectados) tableConectados.getModel();
+    }
+
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        switch (evt.getPropertyName()) {
-            case Model.USERS:
-//                TableModelConectados.setData(model.getUsers());
-                break;
+        // La UI aún no está lista → evita NPE
+        if (panelchat == null || tableConectados == null) return;
+
+        String prop = evt.getPropertyName();
+        if (Model.USERS.equals(prop)) {
+            TableModelConectados tm = ensureTableModel();      // ← siempre tendrás TM válido
+            // Si tienes setRows en tu TM úsalo; si no, recrea:
+            tm.setRows(model.getUsers());                      // ← si agregaste el helper
+            // Si NO tienes setRows, usa esta línea en vez de la anterior:
+            // tableConectados.setModel(new TableModelConectados(
+            //     new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
+            //     new java.util.ArrayList<>(model.getUsers())
+            // ));
+        } else if (Model.INBOX.equals(prop)) {
+            Mensaje m = (Mensaje) evt.getNewValue();
+            TableModelConectados tm = ensureTableModel();
+            // Marca “Mensajes?” = true para el remitente
+            tm.setTieneMensajes(m.getFrom(), true);            // ← agrega este helper en tu TM
+            // Si no tienes el helper, puedes buscar la fila y hacer setValueAt(true, fila, MENSAJES)
         }
     }
+
+
+
 
 
 

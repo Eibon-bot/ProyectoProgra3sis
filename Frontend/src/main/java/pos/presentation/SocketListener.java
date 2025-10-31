@@ -18,7 +18,7 @@ public class SocketListener {
     public SocketListener(ThreadListener listener, String sid) throws Exception {
         this.listener = listener;
         as =new Socket(Protocol.SERVER, Protocol.PORT);
-        sid = sid;
+        this.sid = sid;
         aos = new ObjectOutputStream(as.getOutputStream());
         ais = new ObjectInputStream(as.getInputStream());
         aos.writeInt(Protocol.ASYNC);

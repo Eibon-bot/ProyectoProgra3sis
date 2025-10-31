@@ -44,6 +44,8 @@ public class DialogoEnviar extends JDialog {
 
             }
         });
+
+        pack();
     }
 
     private void onCancel() {

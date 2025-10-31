@@ -4,6 +4,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Service {
     private static Service theInstance;
@@ -15,6 +16,28 @@ public class Service {
     private Socket s;
     private ObjectOutputStream os;
     private ObjectInputStream is;
+
+
+
+
+    private Socket as;
+    private ObjectOutputStream aos;
+    private ObjectInputStream ais;
+
+
+    public interface ServiceListener{
+        void onUserList(List<String> users);   // antes List<Usuario>
+        void onUserJoined(String userId);      // antes Usuario
+        void onUserLeft(String userId);
+        void onMessage(String fromId, String text);
+    }
+
+
+
+
+    private final List<ServiceListener> listeners = new CopyOnWriteArrayList<>();
+    public void addListener(ServiceListener l){ listeners.add(l); }
+    public void removeListener(ServiceListener l){ listeners.remove(l); }
 
     String sid; // Session Id
 
@@ -33,6 +56,57 @@ public class Service {
             System.exit(-1);
         }
     }
+
+    private void openAsyncChannel() throws Exception {
+        as = new Socket(Protocol.SERVER, Protocol.PORT);
+        aos = new ObjectOutputStream(as.getOutputStream());
+        ais = new ObjectInputStream(as.getInputStream());
+        aos.writeInt(Protocol.ASYNC);
+        aos.writeObject(sid); // ¡clave! empata con el SYNC
+        aos.flush();
+
+        Thread t = new Thread(this::asyncLoop, "async-listener");
+        t.setDaemon(true);
+        t.start();
+    }
+
+    private void asyncLoop(){
+        try {
+            while (true){
+                int ev = ais.readInt();
+                switch (ev){
+                    case Protocol.USER_LIST -> {
+                        List<String> ids = (List<String>) ais.readObject();
+                        for (var l: listeners) l.onUserList(ids);
+                    }
+                    case Protocol.USER_JOINED -> {
+                        String uid = (String) ais.readObject();
+                        for (var l: listeners) l.onUserJoined(uid);
+                    }
+                    case Protocol.USER_LEFT -> {
+                        String uid = (String) ais.readObject();
+                        for (var l: listeners) l.onUserLeft(uid);
+                    }
+                    case Protocol.DELIVER_MESSAGE -> {
+                        String from = (String) ais.readObject();
+                        String text = (String) ais.readObject();
+                        for (var l: listeners) l.onMessage(from, text);
+                    }
+                }
+            }
+        } catch (Exception ignored) {}
+    }
+
+    public void sendMessage(String toId, String text) throws Exception {
+        os.writeInt(Protocol.SEND_MESSAGE);
+        os.writeObject(toId);
+        os.writeObject(text);
+        os.flush();
+        if (is.readInt() != Protocol.ERROR_NO_ERROR)
+            throw new Exception("No se pudo enviar el mensaje");
+    }
+
+
 
     public String getSid() {
         return sid;
@@ -383,15 +457,29 @@ public class Service {
     }
 
     // ================== LOGIN / SEGURIDAD ==================
+    // Service.java
     public Usuario login(String id, String clave) throws Exception {
         os.writeInt(Protocol.LOGIN);
         os.writeObject(id);
         os.writeObject(clave);
         os.flush();
-        if (is.readInt() == Protocol.ERROR_NO_ERROR)
-            return (Usuario) is.readObject();
-        else throw new Exception("Credenciales inválidas");
+
+        int code = is.readInt();            // ← primero lee el código
+        if (code == Protocol.ERROR_NO_ERROR) {
+            Usuario u = (Usuario) is.readObject();
+
+            // Abre el canal ASYNC solo si no existe aún:
+            if (as == null) {
+                openAsyncChannel();         // ← ahora sí, después de éxito
+            }
+
+            return u;
+        } else {
+            throw new Exception("Credenciales inválidas");
+        }
     }
+
+
 
     public void cambiarClave(String id, String actual, String nueva) throws Exception {
         os.writeInt(Protocol.CAMBIAR_CLAVE);

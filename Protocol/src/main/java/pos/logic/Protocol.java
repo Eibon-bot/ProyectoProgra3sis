@@ -63,7 +63,18 @@ public class Protocol {
     public static final int ASYNC=11;
     public static final int LOGIN = 801;
     public static final int CAMBIAR_CLAVE = 802;
-    public static final int DELIVER_MESSAGE = 901;
+//    public static final int DELIVER_MESSAGE = 901;
     public static final int DISCONNECT=99;
+
+
+    // --- USUARIOS (ASYNC) ---
+    public static final int USER_LIST   = 300; // payload: List<Usuario>
+    public static final int USER_JOINED = 301; // payload: Usuario
+    public static final int USER_LEFT   = 302; // payload: String userId
+
+    // --- CHAT ---
+    public static final int SEND_MESSAGE    = 400; // SYNC: (toId, text)
+    public static final int DELIVER_MESSAGE = 401; // ASYNC: (fromId, text)
+
 
 }
