@@ -36,7 +36,7 @@ public class ControllerMedicamentos {
     public void update(Medicamento p) throws Exception {
         Medicamento original = model.getCurrent();
         if (original == null || original.getCodigo() == null) {
-            throw new Exception("Codogo nulo");
+            throw new Exception("Codigo nulo");
         }
         p.setCodigo(original.getCodigo());
         Service.instance().updateMedicamento(p);

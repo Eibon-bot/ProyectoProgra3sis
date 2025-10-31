@@ -14,16 +14,23 @@ public class Worker {
     ObjectInputStream is;
     boolean continuar;
 
-    public Worker(Server srv, Socket s, Service service) {
-        try {
+    String sid; // Session Id
+    Socket as;
+    ObjectOutputStream aos;
+    ObjectInputStream ais;
+
+    public Worker(Server srv, Socket s, ObjectOutputStream os, ObjectInputStream is, String sid, Service service) {
             this.srv = srv;
             this.s = s;
-            os = new ObjectOutputStream(s.getOutputStream());
-            is = new ObjectInputStream(s.getInputStream());
+            this.os = os;
+            this.is = is;
             this.service = service;
-        } catch (IOException ex) {
-            System.out.println(ex);
-        }
+            this.sid = sid;
+    }
+    public void setAs(Socket as, ObjectOutputStream aos, ObjectInputStream ais) {
+        this.as = as;
+        this.aos = aos;
+        this.ais = ais;
     }
 
     public void start() {
@@ -412,6 +419,8 @@ public class Worker {
                             String clave = (String) is.readObject();
                             Usuario u = service.login(id, clave);
                             os.writeInt(Protocol.ERROR_NO_ERROR);
+                            srv.deliver_message(this,"Usuario " + u.getNombre() + " se a conectado."
+                            );
                             os.writeObject(u);
                         } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
                         break;
@@ -437,6 +446,16 @@ public class Worker {
 
             } catch (IOException e) {
                 stop();
+            }
+        }
+    }
+    public synchronized void deliver_message(String message) {
+        if (as != null) {
+            try {
+                aos.writeInt(Protocol.DELIVER_MESSAGE);
+                aos.writeObject(message);
+                aos.flush();
+            } catch (Exception e) {
             }
         }
     }

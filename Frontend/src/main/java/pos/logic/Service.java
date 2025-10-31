@@ -16,16 +16,28 @@ public class Service {
     private ObjectOutputStream os;
     private ObjectInputStream is;
 
+    String sid; // Session Id
+
     private Service() {
         try {
             s = new Socket(Protocol.SERVER, Protocol.PORT);
             os = new ObjectOutputStream(s.getOutputStream());
             is = new ObjectInputStream(s.getInputStream());
+
+            os.writeInt(Protocol.SYNC);
+            os.flush();
+            sid=(String)is.readObject();
+
         } catch (Exception e) {
             System.err.println("No se pudo conectar al servidor");
             System.exit(-1);
         }
     }
+
+    public String getSid() {
+        return sid;
+    }
+
     public String generarNuevoIdMedico() throws Exception {
         os.writeInt(Protocol.MEDICO_GENERAR_NUEVO_ID);
         os.flush();

@@ -59,8 +59,11 @@ public class Protocol {
 
     public static final int RECETA_GENERAR_NUEVO_COD = 607;
 
+    public static final int SYNC=10;
+    public static final int ASYNC=11;
     public static final int LOGIN = 801;
     public static final int CAMBIAR_CLAVE = 802;
-
+    public static final int DELIVER_MESSAGE = 901;
     public static final int DISCONNECT=99;
+
 }
