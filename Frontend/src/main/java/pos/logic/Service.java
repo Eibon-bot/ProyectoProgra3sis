@@ -26,11 +26,12 @@ public class Service {
 
 
     public interface ServiceListener{
-        void onUserList(List<String> users);   // antes List<Usuario>
-        void onUserJoined(String userId);      // antes Usuario
-        void onUserLeft(String userId);
-        void onMessage(String fromId, String text);
+        void onUserList(List<Usuario> users);   // antes List<String>
+        void onUserJoined(Usuario user);        // antes String userId
+        void onUserLeft(Usuario user);          // antes String userId
+        void onMessage(Usuario from, String text); // antes (String fromId, String text)
     }
+
 
 
 
@@ -50,6 +51,7 @@ public class Service {
             os.writeInt(Protocol.SYNC);
             os.flush();
             sid=(String)is.readObject();
+
 
         } catch (Exception e) {
             System.err.println("No se pudo conectar al servidor");
@@ -76,20 +78,29 @@ public class Service {
                 int ev = ais.readInt();
                 switch (ev){
                     case Protocol.USER_LIST -> {
-                        List<String> ids = (List<String>) ais.readObject();
-                        for (var l: listeners) l.onUserList(ids);
+                        @SuppressWarnings("unchecked")
+                        List<Usuario> users = (List<Usuario>) ais.readObject(); // ahora lista de Usuario
+                        for (var l: listeners) l.onUserList(users);
                     }
                     case Protocol.USER_JOINED -> {
-                        String uid = (String) ais.readObject();
-                        for (var l: listeners) l.onUserJoined(uid);
+                        Usuario u = (Usuario) ais.readObject();   // ahora Usuario
+                        for (var l: listeners) l.onUserJoined(u);
                     }
                     case Protocol.USER_LEFT -> {
-                        String uid = (String) ais.readObject();
-                        for (var l: listeners) l.onUserLeft(uid);
+                        Object payload = ais.readObject();
+                        // Servidor envía Usuario; si algún cliente viejo manda String, soportamos ambos:
+                        Usuario u = (payload instanceof Usuario)
+                                ? (Usuario) payload
+                                : fallbackUsuario((String) payload); // crea Usuario con solo id
+                        for (var l: listeners) l.onUserLeft(u);
                     }
                     case Protocol.DELIVER_MESSAGE -> {
-                        String from = (String) ais.readObject();
+                        Object fromObj = ais.readObject();
                         String text = (String) ais.readObject();
+
+                        Usuario from = (fromObj instanceof Usuario)
+                                ? (Usuario) fromObj
+                                : fallbackUsuario((String) fromObj); // compatibilidad si llegara String
                         for (var l: listeners) l.onMessage(from, text);
                     }
                 }
@@ -97,14 +108,22 @@ public class Service {
         } catch (Exception ignored) {}
     }
 
-    public void sendMessage(String toId, String text) throws Exception {
+
+    private static Usuario fallbackUsuario(String id) {
+        return new Usuario(id, null, null,null) {};
+    }
+
+
+
+    public void sendMessage(Usuario to, String text) throws Exception {
         os.writeInt(Protocol.SEND_MESSAGE);
-        os.writeObject(toId);
+        os.writeObject(to);     // ahora enviamos Usuario destino
         os.writeObject(text);
         os.flush();
         if (is.readInt() != Protocol.ERROR_NO_ERROR)
             throw new Exception("No se pudo enviar el mensaje");
     }
+
 
 
 
@@ -468,10 +487,10 @@ public class Service {
         if (code == Protocol.ERROR_NO_ERROR) {
             Usuario u = (Usuario) is.readObject();
 
-            // Abre el canal ASYNC solo si no existe aún:
-            if (as == null) {
-                openAsyncChannel();         // ← ahora sí, después de éxito
-            }
+//            // Abre el canal ASYNC solo si no existe aún:
+//            if (as == null) {
+//                openAsyncChannel();         // ← ahora sí, después de éxito
+//            }
 
             return u;
         } else {

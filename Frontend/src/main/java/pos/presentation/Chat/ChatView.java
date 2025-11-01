@@ -26,12 +26,14 @@ public class ChatView implements PropertyChangeListener {
             int modelRow = tableConectados.convertRowIndexToModel(viewRow);
 
             TableModelConectados tm = (TableModelConectados) tableConectados.getModel();
-            String userId = tm.getIdAt(modelRow);
+
+            String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
 
             if (userId == null || userId.isEmpty()) return;
 
-            controller.setDestino(userId);
+            controller.seleccionarPorId(userId);
         });
+
 
 
 
@@ -46,8 +48,8 @@ public class ChatView implements PropertyChangeListener {
             int modelRow = tableConectados.convertRowIndexToModel(viewRow);
 
             TableModelConectados tm = (TableModelConectados) tableConectados.getModel();
-            String userId = tm.getIdAt(modelRow);
-
+            // ✅ sin getIdAt: lee el valor de la columna ID
+            String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
             if (userId == null || userId.isEmpty()) return;
 
             DialogoEnviar dlg = new DialogoEnviar();
@@ -55,6 +57,32 @@ public class ChatView implements PropertyChangeListener {
             dlg.setLocationRelativeTo(panelchat);
             dlg.setVisible(true);
         });
+
+        buttonRecibir.addActionListener(e -> {
+            int viewRow = tableConectados.getSelectedRow();
+            if (viewRow < 0) {
+                JOptionPane.showMessageDialog(panelchat, "Seleccione un usuario.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int modelRow = tableConectados.convertRowIndexToModel(viewRow);
+            TableModelConectados tm = (TableModelConectados) tableConectados.getModel();
+            // ✅ sin getIdAt
+            String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
+            if (userId == null || userId.isEmpty()) return;
+
+            // ❌ ya no existe popMensajePendiente: abre el diálogo directamente
+            DialogoRecibir dlg = new DialogoRecibir();
+            dlg.setRemitente(userId);
+            // si luego integras bandeja, aquí harías dlg.setMensaje(mensaje);
+            dlg.setLocationRelativeTo(panelchat);
+            dlg.setVisible(true);
+
+            // apaga la banderita "Mensajes?"
+            tm.setValueAt(false, modelRow, TableModelConectados.MENSAJES);
+        });
+
 
 
         buttonRecibir.addActionListener(e -> {
@@ -67,25 +95,18 @@ public class ChatView implements PropertyChangeListener {
 
             int modelRow = tableConectados.convertRowIndexToModel(viewRow);
             TableModelConectados tm = (TableModelConectados) tableConectados.getModel();
-            String userId = tm.getIdAt(modelRow);
+            // ✅ sin getIdAt
+            String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
+            if (userId == null || userId.isEmpty()) return;
 
-//            String mensaje = controller.popMensajePendiente(userId);
-
-//            if (mensaje == null) {
-//                JOptionPane.showMessageDialog(panelchat, "No hay mensajes por recibir de " + userId + ".",
-//                        "Información", JOptionPane.INFORMATION_MESSAGE);
-//
-//                tm.setValueAt(false, modelRow, TableModelConectados.MENSAJES);
-//                return;
-//            }
-
-
+            // ❌ ya no existe popMensajePendiente: abre el diálogo directamente
             DialogoRecibir dlg = new DialogoRecibir();
             dlg.setRemitente(userId);
-//            dlg.setMensaje(mensaje);
+            // si luego integras bandeja, aquí harías dlg.setMensaje(mensaje);
             dlg.setLocationRelativeTo(panelchat);
             dlg.setVisible(true);
 
+            // apaga la banderita "Mensajes?"
             tm.setValueAt(false, modelRow, TableModelConectados.MENSAJES);
         });
 
@@ -125,27 +146,18 @@ public class ChatView implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        // La UI aún no está lista → evita NPE
         if (panelchat == null || tableConectados == null) return;
 
         String prop = evt.getPropertyName();
-        if (Model.USERS.equals(prop)) {
-            TableModelConectados tm = ensureTableModel();      // ← siempre tendrás TM válido
-            // Si tienes setRows en tu TM úsalo; si no, recrea:
-            tm.setRows(model.getUsers());                      // ← si agregaste el helper
-            // Si NO tienes setRows, usa esta línea en vez de la anterior:
-            // tableConectados.setModel(new TableModelConectados(
-            //     new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
-            //     new java.util.ArrayList<>(model.getUsers())
-            // ));
-        } else if (Model.INBOX.equals(prop)) {
-            Mensaje m = (Mensaje) evt.getNewValue();
-            TableModelConectados tm = ensureTableModel();
-            // Marca “Mensajes?” = true para el remitente
-            tm.setTieneMensajes(m.getFrom(), true);            // ← agrega este helper en tu TM
-            // Si no tienes el helper, puedes buscar la fila y hacer setValueAt(true, fila, MENSAJES)
+        if (model.USUARIOS.equals(prop)) { // <-- constante estática en la clase del modelo
+            tableConectados.setModel(new TableModelConectados(
+                    new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
+                    new java.util.ArrayList<>(model.getUsuarios()) // pasa la lista nueva
+            ));
         }
     }
+
+
 
 
 

@@ -2,23 +2,21 @@ package pos.presentation.Chat;
 
 import pos.logic.Farmaceutico;
 import pos.logic.Usuario;
+import pos.logic.UsuarioMensajes;
 import pos.presentation.AbstractTableModel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-public class TableModelConectados extends AbstractTableModel {
+import java.util.List;
+
+public class TableModelConectados extends AbstractTableModel<UsuarioMensajes> implements javax.swing.table.TableModel {
+
     public static final int ID = 0;
     public static final int MENSAJES = 1;
 
-
-    private final Map<String, Boolean> marcados = new HashMap<>();
-
-    public TableModelConectados(int[] cols, List rows) {
+    public TableModelConectados(int[] cols, List<UsuarioMensajes> rows) {
         super(cols, rows);
     }
+
 
     @Override
     protected void initColNames() {
@@ -28,12 +26,14 @@ public class TableModelConectados extends AbstractTableModel {
     }
 
     @Override
-    protected Object getPropetyAt(Object e, int col) {
-        String id = (String) e;
+    protected Object getPropetyAt(UsuarioMensajes e, int col) {
         switch (cols[col]) {
-            case ID:        return id;
-            case MENSAJES:  return marcados.getOrDefault(id, Boolean.FALSE);
-            default:        return "";
+            case ID:
+                return e.getNombre();
+            case MENSAJES:
+                return e.mensajesPendientes();
+            default:
+                return "";
         }
     }
 
@@ -45,46 +45,13 @@ public class TableModelConectados extends AbstractTableModel {
 
 
     @Override
-    public Class<?> getColumnClass(int columnIndex) {
-        return (cols[columnIndex] == MENSAJES) ? Boolean.class : String.class;
-    }
-
-    @Override
-    public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        if (cols[columnIndex] == MENSAJES && aValue instanceof Boolean) {
-            String id = (String) rows.get(rowIndex);
-            marcados.put(id, (Boolean) aValue);
-            fireTableRowsUpdated(rowIndex, rowIndex);
-        }
+    public Class<?> getColumnClass(int colIndex) {
+        if (cols[colIndex] == MENSAJES)
+            return Boolean.class;
+        return String.class;
     }
 
 
-    public String getIdAt(int row) {
-        return (row >= 0 && row < rows.size()) ? (String) rows.get(row) : null;
-    }
-
-    public java.util.List<String> getIdsMarcados() {
-        java.util.List<String> out = new java.util.ArrayList<>();
-        for (Object o : rows) {
-            String id = (String) o;
-            Boolean v = marcados.get(id);
-            if (v != null && v) out.add(id);
-        }
-        return out;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void setRows(java.util.List<String> newRows) {
-        this.rows = (newRows == null) ? new java.util.ArrayList<>() : new java.util.ArrayList<>(newRows);
-        fireTableDataChanged();
-    }
-
-
-
-    public void setTieneMensajes(String id, boolean v){
-        marcados.put(id, v);
-        fireTableDataChanged();
-    }
 
 }
 

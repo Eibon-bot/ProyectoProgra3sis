@@ -36,7 +36,9 @@ public class App {
                 pos.presentation.Login.Model model = new pos.presentation.Login.Model();
                 login view = new login();
                 Service serv= Service.instance();
+
                 new pos.presentation.Login.Controller(view, model, serv);
+
 
                 JFrame window = new JFrame("Login");
                 window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);

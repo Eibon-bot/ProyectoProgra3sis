@@ -1,6 +1,7 @@
 package pos.presentation;
 
 import pos.logic.Protocol;
+import pos.logic.Usuario;
 import pos.presentation.ThreadListener;
 
 import javax.swing.*;
@@ -44,10 +45,29 @@ public class SocketListener {
                 switch (method) {
                     case Protocol.DELIVER_MESSAGE:
                         try {
+
+                            Usuario usuario = (Usuario) ais.readObject();
                             String message = (String) ais.readObject();
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() { listener.deliver_message(message);} });
-                        } catch (ClassNotFoundException ex) {}
+                            deliver(usuario, message);
+                        } catch (ClassNotFoundException ex) {
+                            break;
+                        }
+                        break;
+                    case Protocol.USER_JOINED:
+                        try {
+                            Usuario usuario = (Usuario) ais.readObject();
+                            joined(usuario); // nombre, id
+                        } catch (ClassNotFoundException ex) {
+                            break;
+                        }
+                        break;
+                    case Protocol.USER_LEFT:
+                        try {
+                            Usuario usuario = (Usuario) ais.readObject();
+                            left(usuario);
+                        } catch (ClassNotFoundException ex) {
+                            break;
+                        }
                         break;
                 }
             } catch (IOException ex) { condition = false; }
@@ -56,6 +76,28 @@ public class SocketListener {
             as.shutdownOutput();
             as.close();
         } catch (IOException e) {}
+    }
+
+    private void deliver(final Usuario usuarioEmisor, final String message) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                listener.deliver_message(usuarioEmisor, message);
+            }
+        });
+    }
+    private void joined(final Usuario usuario) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                listener.joined(usuario);
+            }
+        });
+    }
+    private void left(final Usuario usuario) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                listener.leftt(usuario);
+            }
+        });
     }
 
 }

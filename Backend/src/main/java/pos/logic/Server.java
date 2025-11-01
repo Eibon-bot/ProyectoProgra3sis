@@ -5,19 +5,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     ServerSocket ss;
     List<Worker> workers;
-
-    Map<String, Worker> byUser = new ConcurrentHashMap<>(); // userId -> Worker
-    Map<String, String> sidToUser = new ConcurrentHashMap<>();
-    Map<String, Worker>  bySid = new ConcurrentHashMap<>();    // <<< NUEVO: sid -> Worker
 
     public Server() {
         try {
@@ -64,43 +57,101 @@ public class Server {
         }
     }
 
+//    public void remove(Worker w) {
+//        workers.remove(w);
+//        String uid = sidToUser.remove(w.sid);
+//        if (uid != null) {
+//            byUser.remove(uid);
+//            broadcastUserLeft(uid);  // NUEVO
+//        }
+//        System.out.println("Quedan: " + workers.size());
+//    }
+
+//    void broadcastUserJoined(String userId){
+//        for (Worker w: workers) w.sendAsyncUserJoined(userId);
+//    }
+//    void broadcastUserLeft(String userId){
+//        for (Worker w: workers) w.sendAsyncUserLeft(userId);
+//    }
+//    void sendInitialUserList(Worker w){
+//        List<String> list = new ArrayList<>(byUser.keySet());
+//        w.sendAsyncUserList(list);
+//    }
+
+
+
     public void remove(Worker w) {
         workers.remove(w);
-        String uid = sidToUser.remove(w.sid);
-        if (uid != null) {
-            byUser.remove(uid);
-            broadcastUserLeft(uid);  // NUEVO
+        System.out.println("Quedan: " +workers.size());
+    }
+    public void connectedUsers(Worker from){
+        System.out.println("connectedUsers from=" + from.getUsuario().getId());
+        List<String> ids = new ArrayList<>();
+        for (Worker w : workers) {
+            if (!Objects.equals(w.getUsuario().getId(), from.getUsuario().getId()) && !ids.contains(w.getUsuario().getId())) {
+                from.sendNotification(Protocol.USER_JOINED, w.getUsuario());
+                ids.add(w.getUsuario().getId());
+
+            }
         }
-        System.out.println("Quedan: " + workers.size());
-    }
-
-    void broadcastUserJoined(String userId){
-        for (Worker w: workers) w.sendAsyncUserJoined(userId);
-    }
-    void broadcastUserLeft(String userId){
-        for (Worker w: workers) w.sendAsyncUserLeft(userId);
-    }
-    void sendInitialUserList(Worker w){
-        List<String> list = new ArrayList<>(byUser.keySet());
-        w.sendAsyncUserList(list);
     }
 
 
 
-
-
-
-
-    public void join(Socket as, ObjectOutputStream aos, ObjectInputStream ais, String sid){
-        for(Worker w: workers){
-            if (w.sid.equals(sid)){
+    public void join(Socket as, ObjectOutputStream aos, ObjectInputStream ais, String sid) {
+        for (Worker w: workers) {
+            if (w.sid.equals(sid)) {
+                if (w.aos != null) { // <- ya hay canal async para este worker
+                    System.out.println("Ignorando ASYNC duplicado para sid " + sid);
+                    try { as.close(); } catch (IOException ignored) {}
+                    return;
+                }
                 w.setAs(as, aos, ais);
-                System.out.println("[JOIN] ASYNC enlazado para sid=" + sid);
-
-                // >>> ENVÍA LA LISTA INICIAL AHORA, que ya hay 'aos'
-                sendInitialUserList(w);
-
+                System.out.println("JOIN sid=" + sid + " user? " + (w.getUsuario() != null));
+                if (w.getUsuario() != null) connectedUsers(w);
                 break;
+            }
+        }
+    }
+
+
+
+
+    public void notifyUserConnected(Worker from, Usuario user) {
+        System.out.println("Usuario conectado: " + user.getId());
+
+        boolean alreadyConnected = workers.stream()
+                .filter(w -> w != from)
+                .anyMatch(w -> w.getUsuario().getId().equals(user.getId()));
+
+        if (!alreadyConnected) {
+            for (Worker w : workers) {
+                if (!Objects.equals(w.getUsuario().getId(), user.getId())) {
+                    w.sendNotification(Protocol.USER_JOINED, user);
+                }
+            }
+        }
+    }
+
+    public void notifyUserDisconnected(Worker from) {
+        workers.remove(from);
+        System.out.println("Usuario desconectado: " +from.getUsuario().getId() );
+
+        boolean stillConnected = workers.stream()
+                .anyMatch(w -> w.getUsuario().equals(from.getUsuario()));
+
+        if (!stillConnected) {
+            for (Worker w : workers) {
+                w.sendNotification(Protocol.USER_LEFT, from.getUsuario());
+            }
+        }
+
+    }
+    public void sendMessage(Usuario from, Usuario destino, String texto) {
+
+        for (Worker w : workers) {
+            if (w.getUsuario().getId().equals(destino.getId())) {
+                w.sendMessage(Protocol.DELIVER_MESSAGE, from , texto);
             }
         }
     }

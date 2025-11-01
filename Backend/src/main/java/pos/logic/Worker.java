@@ -19,19 +19,26 @@ public class Worker {
     ObjectOutputStream aos;
     ObjectInputStream ais;
 
+    // ======= CHAT: usuario autenticado (nuevo) =======
+    Usuario usuario;
+
     public Worker(Server srv, Socket s, ObjectOutputStream os, ObjectInputStream is, String sid, Service service) {
-            this.srv = srv;
-            this.s = s;
-            this.os = os;
-            this.is = is;
-            this.service = service;
-            this.sid = sid;
+        this.srv = srv;
+        this.s = s;
+        this.os = os;
+        this.is = is;
+        this.service = service;
+        this.sid = sid;
     }
     public void setAs(Socket as, ObjectOutputStream aos, ObjectInputStream ais) {
         this.as = as;
         this.aos = aos;
         this.ais = ais;
     }
+
+    // ======= CHAT: accessors (nuevo) =======
+    public void setUsuario(Usuario u){ this.usuario = u; }
+    public Usuario getUsuario(){ return this.usuario; }
 
     public void start() {
         try {
@@ -45,6 +52,8 @@ public class Worker {
     public void stop() {
         continuar = false;
         System.out.println("Conexión cerrada...");
+        // ======= CHAT: notificar desconexión (nuevo) =======
+        try { srv.notifyUserDisconnected(this); } catch (Exception ignored) {}
     }
 
     public void listen() {
@@ -164,7 +173,6 @@ public class Worker {
                             os.writeInt(Protocol.ERROR_ERROR);
                         }
                         break;
-
 
                     case Protocol.FARMA_FINDALL:
                         try {
@@ -286,7 +294,6 @@ public class Worker {
                         }
                         break;
 
-
                     case Protocol.MEDICAMENTO_FINDALL:
                         try {
                             List<Medicamento> lm = service.findAllMedicamento();
@@ -346,8 +353,6 @@ public class Worker {
                             os.writeInt(Protocol.ERROR_ERROR);
                         }
                         break;
-
-
 
                     case Protocol.PACIENTE_FINDALL:
                         try {
@@ -419,21 +424,20 @@ public class Worker {
                             String clave = (String) is.readObject();
                             Usuario u = service.login(id, clave);
 
-                            srv.sidToUser.put(sid, u.getId());
-                            srv.byUser.put(u.getId(), this);
+                            setUsuario(u);
+                            srv.notifyUserConnected(this, u);
+                            System.out.println("LOGIN ok " + u.getId() + " ASYNC? " + (aos != null));
+
+                            // ⬇️ IMPORTANTE: si el ASYNC ya estaba, mándale la lista ahora
+                            try { srv.connectedUsers(this); } catch (Exception ignore) {}
 
                             os.writeInt(Protocol.ERROR_NO_ERROR);
                             os.writeObject(u);
                             os.flush();
-
-                            srv.broadcastUserJoined(u.getId());
                         } catch (Exception ex) {
                             os.writeInt(Protocol.ERROR_ERROR);
                         }
                         break;
-
-
-
 
 
                     case Protocol.CAMBIAR_CLAVE:
@@ -444,6 +448,19 @@ public class Worker {
                             service.cambiarClave(id, claveActual, claveNueva);
                             os.writeInt(Protocol.ERROR_NO_ERROR);
                         } catch (Exception ex) { os.writeInt(Protocol.ERROR_ERROR); }
+                        break;
+
+                    // ================== CHAT (nuevo) ==================
+                    case Protocol.SEND_MESSAGE:
+                        try {
+                            // En tu Server.sendMessage(Usuario from, Usuario destino, String texto)
+                            Usuario destino = (Usuario) is.readObject();
+                            String texto = (String) is.readObject();
+                            srv.sendMessage(usuario, destino, texto);
+                            os.writeInt(Protocol.ERROR_NO_ERROR);
+                        } catch (Exception ex) {
+                            os.writeInt(Protocol.ERROR_ERROR);
+                        }
                         break;
 
                     // ================== DESCONECTAR ==================
@@ -461,12 +478,33 @@ public class Worker {
         }
     }
 
+    // ======= CHAT: métodos asíncronos que usa tu Server (nuevos) =======
+    public void sendMessage(int type, Usuario user, String message) {
+        if (as != null) {
+            try {
+                aos.writeInt(type);         // p.ej. Protocol.DELIVER_MESSAGE
+                aos.writeObject(user);      // payload: Usuario (remitente)
+                aos.writeObject(message);   // payload: texto
+                aos.flush();
+            } catch (IOException e) {
+                System.out.println("Error enviando notificación: " + e.getMessage());
+            }
+        }
+    }
 
+    public void sendNotification(int type, Usuario user) {
+        if (as != null) {
+            try {
+                aos.writeInt(type);    // USER_JOINED / USER_LEFT (tu Server los usa)
+                aos.writeObject(user); // payload: Usuario
+                aos.flush();
+            } catch (IOException e) {
+                System.out.println("Error enviando notificación: " + e.getMessage());
+            }
+        }
+    }
 
-
-
-
-
+    // ======= (legacy) Métodos que ya tenías; los dejo por compatibilidad =======
     public synchronized void sendAsyncUserJoined(String userId){
         if (aos == null) return;
         try {
@@ -503,18 +541,4 @@ public class Worker {
             aos.flush();
         } catch(Exception ignored){}
     }
-
-
-
-
-//    public synchronized void deliver_message(String message) {
-//        if (as != null) {
-//            try {
-//                aos.writeInt(Protocol.DELIVER_MESSAGE);
-//                aos.writeObject(message);
-//                aos.flush();
-//            } catch (Exception e) {
-//            }
-//        }
-//    }
 }
