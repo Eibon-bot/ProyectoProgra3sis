@@ -1,12 +1,9 @@
 package pos.presentation.Chat;
 
 
-import pos.logic.Mensaje;
 import pos.logic.Usuario;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
