@@ -1,5 +1,7 @@
 package pos.presentation.Chat;
 
+import pos.logic.Usuario;
+
 import javax.swing.*;
 import java.awt.event.*;
 
@@ -10,11 +12,13 @@ public class DialogoEnviar extends JDialog {
     private JLabel labelNombreAEnviar;
     private JTextField textFieldMensaje;
 
+    private Controller controller;
+    private Usuario destinatario;
+
     public DialogoEnviar() {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonEnviarReal);
-
 
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -22,7 +26,6 @@ public class DialogoEnviar extends JDialog {
             }
         });
 
-        // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -30,33 +33,55 @@ public class DialogoEnviar extends JDialog {
             }
         });
 
-        // call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
-
         buttonEnviarReal.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                doSend();
             }
         });
 
         pack();
     }
 
-    private void onCancel() {
-        // add your code here if necessary
+    public void setController(Controller c){
+        this.controller = c;
+    }
+
+    // Corregido: recibir Usuario en lugar de String
+    public void setDestinatario(Usuario u) {
+        this.destinatario = u;
+        if (labelNombreAEnviar != null) {
+            labelNombreAEnviar.setText(u != null && u.getId() != null ? u.getId() : "");
+        }
+    }
+
+    private void doSend() {
+        if (controller == null) {
+            onCancel();
+            return;
+        }
+        String mensaje = (textFieldMensaje != null) ? textFieldMensaje.getText() : null;
+        if (mensaje == null || mensaje.trim().isEmpty()) {
+            onCancel();
+            return;
+        }
+
+        try {
+            controller.enviar(mensaje);
+            if (destinatario != null && destinatario.getId() != null) {
+                controller.setMensajesFlag(destinatario.getId(), true);
+            }
+        } catch (Exception ignored) { }
         dispose();
     }
 
-
-    public void setDestinatario(String id) {
-        if (labelNombreAEnviar != null) labelNombreAEnviar.setText(id);
+    private void onCancel() {
+        dispose();
     }
-
-
 }

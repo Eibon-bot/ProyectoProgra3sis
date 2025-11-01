@@ -2,7 +2,6 @@ package pos.presentation;
 
 import pos.logic.Protocol;
 import pos.logic.Usuario;
-import pos.presentation.ThreadListener;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -45,10 +44,10 @@ public class SocketListener {
                 switch (method) {
                     case Protocol.DELIVER_MESSAGE:
                         try {
-
-                            Usuario usuario = (Usuario) ais.readObject();
+                            Usuario usuario1 = (Usuario) ais.readObject();
+                            Usuario usuario2 = (Usuario) ais.readObject();
                             String message = (String) ais.readObject();
-                            deliver(usuario, message);
+                            deliver(usuario1, usuario2, message);
                         } catch (ClassNotFoundException ex) {
                             break;
                         }
@@ -78,10 +77,10 @@ public class SocketListener {
         } catch (IOException e) {}
     }
 
-    private void deliver(final Usuario usuarioEmisor, final String message) {
+    private void deliver(final Usuario usuarioEmisor, Usuario usuarioReceptor, final String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                listener.deliver_message(usuarioEmisor, message);
+                listener.deliver_message(usuarioEmisor,usuarioReceptor, message);
             }
         });
     }

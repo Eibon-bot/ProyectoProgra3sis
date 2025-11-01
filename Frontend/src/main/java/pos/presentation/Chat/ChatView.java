@@ -2,12 +2,14 @@ package pos.presentation.Chat;
 
 
 import pos.logic.Mensaje;
+import pos.logic.Usuario;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 
 public class ChatView implements PropertyChangeListener {
     private JTable tableConectados;
@@ -31,11 +33,8 @@ public class ChatView implements PropertyChangeListener {
 
             if (userId == null || userId.isEmpty()) return;
 
-            controller.seleccionarPorId(userId);
+            if (controller != null) controller.seleccionarPorId(userId);
         });
-
-
-
 
         buttonEnviar.addActionListener(e -> {
             int viewRow = tableConectados.getSelectedRow();
@@ -48,12 +47,21 @@ public class ChatView implements PropertyChangeListener {
             int modelRow = tableConectados.convertRowIndexToModel(viewRow);
 
             TableModelConectados tm = (TableModelConectados) tableConectados.getModel();
-            // ✅ sin getIdAt: lee el valor de la columna ID
             String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
             if (userId == null || userId.isEmpty()) return;
+
+            // Buscar Usuario en el modelo y pasar el objeto Usuario al diálogo
+            Usuario destinatario = findUsuarioById(userId);
+            if (destinatario == null) {
+                JOptionPane.showMessageDialog(panelchat, "Usuario no disponible.", "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
             DialogoEnviar dlg = new DialogoEnviar();
-            dlg.setDestinatario(userId);
+            // pasar controller y destinatario
+            dlg.setController(controller);
+            dlg.setDestinatario(destinatario);
             dlg.setLocationRelativeTo(panelchat);
             dlg.setVisible(true);
         });
@@ -68,48 +76,28 @@ public class ChatView implements PropertyChangeListener {
 
             int modelRow = tableConectados.convertRowIndexToModel(viewRow);
             TableModelConectados tm = (TableModelConectados) tableConectados.getModel();
-            // ✅ sin getIdAt
             String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
             if (userId == null || userId.isEmpty()) return;
 
-            // ❌ ya no existe popMensajePendiente: abre el diálogo directamente
             DialogoRecibir dlg = new DialogoRecibir();
+            dlg.setController(controller);
             dlg.setRemitente(userId);
-            // si luego integras bandeja, aquí harías dlg.setMensaje(mensaje);
-            dlg.setLocationRelativeTo(panelchat);
-            dlg.setVisible(true);
 
-            // apaga la banderita "Mensajes?"
-            tm.setValueAt(false, modelRow, TableModelConectados.MENSAJES);
-        });
-
-
-
-        buttonRecibir.addActionListener(e -> {
-            int viewRow = tableConectados.getSelectedRow();
-            if (viewRow < 0) {
-                JOptionPane.showMessageDialog(panelchat, "Seleccione un usuario.", "Aviso",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
+            // Mostrar el primer mensaje pendiente (sin consumirlo aquí)
+            String mensaje = "";
+            if (model != null) {
+                List<String> pend = model.getPendingMessages(userId);
+                if (pend != null && !pend.isEmpty()) {
+                    mensaje = pend.get(0);
+                }
             }
+            dlg.setMensaje(mensaje);
 
-            int modelRow = tableConectados.convertRowIndexToModel(viewRow);
-            TableModelConectados tm = (TableModelConectados) tableConectados.getModel();
-            // ✅ sin getIdAt
-            String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
-            if (userId == null || userId.isEmpty()) return;
-
-            // ❌ ya no existe popMensajePendiente: abre el diálogo directamente
-            DialogoRecibir dlg = new DialogoRecibir();
-            dlg.setRemitente(userId);
-            // si luego integras bandeja, aquí harías dlg.setMensaje(mensaje);
             dlg.setLocationRelativeTo(panelchat);
             dlg.setVisible(true);
 
-            // apaga la banderita "Mensajes?"
-            tm.setValueAt(false, modelRow, TableModelConectados.MENSAJES);
+            // La acción de confirmar (quitar pendiente) la hace DialogoRecibir -> controller.confirmReceived(...)
         });
-
 
     }
 
@@ -130,8 +118,13 @@ public class ChatView implements PropertyChangeListener {
 
     }
 
-
-
+    private Usuario findUsuarioById(String id) {
+        if (id == null || model == null) return null;
+        for (Usuario u : model.getUsuarios()) {
+            if (u != null && id.equals(u.getId())) return u;
+        }
+        return null;
+    }
 
     private TableModelConectados ensureTableModel() {
         if (!(tableConectados.getModel() instanceof TableModelConectados)) {
@@ -157,12 +150,4 @@ public class ChatView implements PropertyChangeListener {
         }
     }
 
-
-
-
-
-
-
-
 }
-

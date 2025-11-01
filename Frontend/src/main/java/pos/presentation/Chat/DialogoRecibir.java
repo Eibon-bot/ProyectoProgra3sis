@@ -9,6 +9,9 @@ public class DialogoRecibir extends JDialog {
     private JLabel labelIdCambia;
     private JLabel LabelMensajeRecibido;
 
+    private Controller controller;
+    private String remitenteId;
+
     public DialogoRecibir() {
         setContentPane(contentPane);
         setModal(true);
@@ -20,23 +23,26 @@ public class DialogoRecibir extends JDialog {
             }
         });
 
+        pack();
+    }
+
+    public void setController(Controller c){
+        this.controller = c;
     }
 
     private void onOK() {
-        // add your code here
+        if (controller != null && remitenteId != null) {
+            controller.confirmReceived(remitenteId);
+        }
         dispose();
     }
 
     public void setRemitente(String id) {
-        if (labelIdCambia != null)
-            labelIdCambia.setText(id);
+        this.remitenteId = id;
+        if (labelIdCambia != null) labelIdCambia.setText(id);
     }
 
     public void setMensaje(String mensaje) {
-        if (LabelMensajeRecibido != null)
-            LabelMensajeRecibido.setText(mensaje);
+        if (LabelMensajeRecibido != null) LabelMensajeRecibido.setText(mensaje);
     }
-
-
-
 }

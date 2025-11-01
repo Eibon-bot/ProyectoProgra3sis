@@ -1,22 +1,21 @@
 package pos.presentation.Chat;
 
-import pos.logic.Mensaje;
 import pos.logic.Usuario;
-import pos.logic.UsuarioMensajes;
 import pos.presentation.AbstractModel;
 
-import javax.swing.*;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Model extends AbstractModel {
 
     public static final String USUARIOS    = "usuarios";
     public static final String SELECCIONADO = "seleccionado";
 
-    private List<UsuarioMensajes> usuarios = new ArrayList<UsuarioMensajes>();
-    private UsuarioMensajes usuarioSeleccionado;
+    private List<Usuario> usuarios = new ArrayList<>();
+    private String usuarioSeleccionadoId;
+
+    // mapa userId -> lista de mensajes pendientes
+    private Map<String, List<String>> pendientes = new HashMap<>();
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -25,18 +24,60 @@ public class Model extends AbstractModel {
         firePropertyChange(SELECCIONADO);
     }
 
-    public List<UsuarioMensajes> getUsuarios() { return usuarios; }
+    public List<Usuario> getUsuarios() { return usuarios; }
 
-    public void setUsuarios(List<UsuarioMensajes> lista) {
-        if (lista == null) lista = new ArrayList<UsuarioMensajes>();
+    public void setUsuarios(List<Usuario> lista) {
+        if (lista == null) lista = new ArrayList<>();
         this.usuarios = lista;
+        // asegurar entradas en el mapa de pendientes
+        for (Usuario u : lista) {
+            if (u != null && !pendientes.containsKey(u.getId())) {
+                pendientes.put(u.getId(), new ArrayList<>());
+            }
+        }
         firePropertyChange(USUARIOS);
     }
 
-    public UsuarioMensajes getUsuarioSeleccionado() { return usuarioSeleccionado; }
+    public Usuario getUsuarioSeleccionado() {
+        if (usuarioSeleccionadoId == null) return null;
+        for (Usuario u : usuarios) if (u != null && usuarioSeleccionadoId.equals(u.getId())) return u;
+        return null;
+    }
 
-    public void setUsuarioSeleccionado(UsuarioMensajes u) {
-        this.usuarioSeleccionado = u;
+    public void setUsuarioSeleccionado(Usuario u) {
+        this.usuarioSeleccionadoId = (u == null) ? null : u.getId();
         firePropertyChange(SELECCIONADO);
+    }
+
+    // PENDIENTES
+    public void addPendingMessage(String userId, String mensaje) {
+        if (userId == null) return;
+        pendientes.computeIfAbsent(userId, k -> new ArrayList<>()).add(mensaje);
+        firePropertyChange(USUARIOS);
+    }
+
+    public String popFirstPending(String userId) {
+        List<String> l = pendientes.get(userId);
+        if (l == null || l.isEmpty()) return null;
+        String m = l.remove(0);
+        firePropertyChange(USUARIOS);
+        return m;
+    }
+
+    public boolean hasPending(String userId) {
+        List<String> l = pendientes.get(userId);
+        return l != null && !l.isEmpty();
+    }
+
+    public void clearPending(String userId) {
+        List<String> l = pendientes.get(userId);
+        if (l != null) l.clear();
+        firePropertyChange(USUARIOS);
+    }
+
+    public List<String> getPendingMessages(String userId) {
+        List<String> l = pendientes.get(userId);
+        if (l == null) return Collections.emptyList();
+        return new ArrayList<>(l);
     }
 }

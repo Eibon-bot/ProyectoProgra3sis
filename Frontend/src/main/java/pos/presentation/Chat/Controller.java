@@ -1,13 +1,10 @@
 package pos.presentation.Chat;
 
-import pos.logic.Mensaje;
 import pos.logic.Service;
 import pos.logic.Usuario;
-import pos.logic.UsuarioMensajes;
 import pos.presentation.SocketListener;
 import pos.presentation.ThreadListener;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,82 +14,73 @@ public class Controller implements ThreadListener {
     private ChatView view;
     SocketListener sl;
 
-    public Controller(ChatView view, Model model)throws Exception {
+    public Controller(ChatView view, Model model) throws Exception {
         this.view = view;
         this.model = model;
 
         view.setModel(model);
         view.setController(this);
 
-        try{
-            sl= new SocketListener(this,((Service) Service.instance()).getSid());
+        try {
+            sl = new SocketListener(this, ((Service) Service.instance()).getSid());
             sl.start();
-        }catch(Exception e){}
-
+        } catch (Exception e) { }
     }
 
-    public void enviar(String mensaje) throws Exception{
-
-        Service.instance().sendMessage(model.getUsuarioSeleccionado().getUsuario(),mensaje);
+    public void enviar(String mensaje) throws Exception {
+        Usuario destino = model.getUsuarioSeleccionado();
+        if (destino == null) throw new IllegalStateException("No hay destinatario seleccionado");
+        Service.instance().sendMessage(destino, mensaje);
     }
-//    public Mensaje popMensajePendiente(String fromId){
-//        return model.popFirstFrom(fromId);
-//    }
 
+    public void setMensajesFlag(String userId, boolean value) {
+        if (userId == null) return;
+        if (value) {
+            model.addPendingMessage(userId, "[pendiente]");
+        } else {
+            model.clearPending(userId);
+        }
+    }
 
-//    public void setDestino(String userId){
-//        model.setCurrentTarget(userId);
-//    }
-
-    public void setMensajesFlag(String userId, boolean value){
-//        Service.setFlag(userId, value);
+    public void confirmReceived(String fromId) {
+        if (fromId == null) return;
+        // quitar solo el primer mensaje pendiente
+        String m = model.popFirstPending(fromId);
+        // si ya no hay pendientes, nada más (vista reflejará cambios vía listeners)
     }
 
     public void seleccionarPorId(String userId) {
         if (userId == null) return;
-        List<UsuarioMensajes> lista = model.getUsuarios();
+        List<Usuario> lista = model.getUsuarios();
         if (lista == null) return;
-
-        for (int i = 0; i < lista.size(); i++) {
-            UsuarioMensajes um = lista.get(i);
-            if (um == null || um.getUsuario() == null) continue;
-            String rid = um.getUsuario().getId();
-            if ((userId == null && rid == null) || (userId != null && userId.equals(rid))) {
-                model.setUsuarioSeleccionado(um);
+        for (Usuario u : lista) {
+            if (u == null) continue;
+            if ((userId == null && u.getId() == null) || (userId != null && userId.equals(u.getId()))) {
+                model.setUsuarioSeleccionado(u);
                 return;
             }
         }
     }
 
-
-
-
     @Override
     public void joined(Usuario usuario) {
-        UsuarioMensajes nuevo = new UsuarioMensajes(usuario);
-        List<UsuarioMensajes> n = new ArrayList<>(model.getUsuarios());
-        n.add(nuevo);
+        List<Usuario> n = new ArrayList<>(model.getUsuarios());
+        n.add(usuario);
         model.setUsuarios(n);
-        System.out.println(n.size());
-
     }
 
     @Override
     public void leftt(Usuario usuario) {
-        List<UsuarioMensajes> n = new ArrayList<>(model.getUsuarios());
-        n.removeIf(u -> u.getUsuario().getId().equals(usuario.getId()));
+        List<Usuario> n = new ArrayList<>(model.getUsuarios());
+        n.removeIf(u -> u == null || u.getId() == null ? false : u.getId().equals(usuario.getId()));
         model.setUsuarios(n);
-
     }
-    @Override
-    public void deliver_message(Usuario usuario, String message) {
-        List<UsuarioMensajes> n = new ArrayList<>(model.getUsuarios());
-        for (UsuarioMensajes u : n){
-            if(Objects.equals(u.getUsuario().getId(), usuario.getId())){
-                u.addMensaje(message);
-            }
-        }
 
-        model.setUsuarios(n);
+    @Override
+    public void deliver_message(Usuario usuarioEmisor, Usuario usuarioReceptor, String message) {
+        // añado mensaje pendiente para el remitente (usuarioEmisor)
+        if (usuarioEmisor != null) {
+            model.addPendingMessage(usuarioEmisor.getId(), message);
+        }
     }
 }
