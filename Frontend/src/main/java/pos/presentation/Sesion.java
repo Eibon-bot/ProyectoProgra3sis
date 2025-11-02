@@ -73,14 +73,15 @@ public class Sesion extends JFrame {
             tabs.add("Inicio", new JPanel());
         }
 
-        setContentPane(tabs);
+        JPanel panelFinal = withChatSidebar(tabs);
+
+        setContentPane(panelFinal);
         pack();
         setLocationRelativeTo(null);
     }
 
 
     private JPanel buildChatPanelSimple() {
-        // chatModel.setList(Service.instance().findUsuariosConectados());
         try {
             var chatView  = new pos.presentation.Chat.ChatView();
             var chatModel = new pos.presentation.Chat.Model();
@@ -93,7 +94,7 @@ public class Sesion extends JFrame {
         }
     }
 
-    private JPanel withChatSidebar(JPanel center) {
+    private JPanel withChatSidebar(JComponent center) { // <--- ¡CAMBIA ESTO!
         JPanel root = new JPanel(new BorderLayout());
         root.add(center, BorderLayout.CENTER);
 
@@ -109,7 +110,7 @@ public class Sesion extends JFrame {
         var view = new MediAdmin();
         var model = new pos.presentation.Medico.Model();
         new pos.presentation.Medico.Controller(view, model);
-        return withChatSidebar(view.getPanel());
+        return view.getPanel();
     }
 
     private JPanel buildFarmaceuticosTab() throws Exception {
@@ -117,7 +118,7 @@ public class Sesion extends JFrame {
         var model = new pos.presentation.Farmaceutico.Model();
         new pos.presentation.Farmaceutico.Controller(view, model);
         model.setList(Service.instance().findAllFarmaceutico());
-        return withChatSidebar(view.getPanel());
+        return view.getPanel();
     }
 
     private JPanel buildPacientesTab() throws Exception {
@@ -125,7 +126,7 @@ public class Sesion extends JFrame {
         var model = new pos.presentation.Pacientes.Model();
         new pos.presentation.Pacientes.Controller(view, model);
         model.setList(Service.instance().findAllPaciente());
-        return withChatSidebar(view.getPanel());
+        return view.getPanel();
     }
 
     private JPanel buildMedicamentosTab() throws Exception {
@@ -135,7 +136,7 @@ public class Sesion extends JFrame {
         view.setModel(model);
         view.setController(controller);
         model.setList(Service.instance().findAllMedicamento());
-        return withChatSidebar(view.getPanel());
+        return view.getPanel();
     }
 
     private JPanel buildPrescribirTab() {
@@ -143,7 +144,7 @@ public class Sesion extends JFrame {
         var model = new pos.presentation.Prescribir.Model();
         new pos.presentation.Prescribir.Controller(view, model);
         model.setCurrentMedico((Medico) user);
-        return withChatSidebar(view.getPrescribir());
+        return view.getPrescribir();
     }
 
     private JPanel buildDashboardTab() throws Exception {
@@ -153,7 +154,7 @@ public class Sesion extends JFrame {
         view.setModel(model);
         view.setController(controller);
         view.init();
-        return withChatSidebar(view.getPanel());
+        return view.getPanel();
     }
 
     private JPanel buildDespachoTab() throws Exception {
@@ -162,7 +163,7 @@ public class Sesion extends JFrame {
         var controller = new ControllerDF(model, view);
         model.setCurrentFarmaceutico((Farmaceutico) user);
         controller.loadPacientes();
-        return withChatSidebar(view.getPanel1());
+        return view.getPanel1();
     }
 
     private JPanel buildHistoricotab() throws Exception {
@@ -170,6 +171,6 @@ public class Sesion extends JFrame {
         var model = new pos.presentation.Historico.Model();
         var controller = new pos.presentation.Historico.Controller(view, model);
         controller.loadRecetas();
-        return withChatSidebar(view.getHistorico());
+        return view.getHistorico();
     }
 }
