@@ -81,7 +81,7 @@ public class ChatView implements PropertyChangeListener {
             dlg.setRemitente(userId);
 
             // Mostrar el primer mensaje pendiente (sin consumirlo aquí)
-            String mensaje = "";
+            String mensaje = "No hay mensajes";
             if (model != null) {
                 List<String> pend = model.getPendingMessages(userId);
                 if (pend != null && !pend.isEmpty()) {
@@ -126,10 +126,12 @@ public class ChatView implements PropertyChangeListener {
     private TableModelConectados ensureTableModel() {
         if (!(tableConectados.getModel() instanceof TableModelConectados)) {
             tableConectados.setModel(new TableModelConectados(
+                    model,
                     new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
                     new java.util.ArrayList<>()
             ));
         }
+
         return (TableModelConectados) tableConectados.getModel();
     }
 
@@ -141,10 +143,12 @@ public class ChatView implements PropertyChangeListener {
         String prop = evt.getPropertyName();
         if (model.USUARIOS.equals(prop)) { // <-- constante estática en la clase del modelo
             tableConectados.setModel(new TableModelConectados(
+                    model,
                     new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
                     new java.util.ArrayList<>(model.getUsuarios()) // pasa la lista nueva
             ));
         }
+
     }
 
 }

@@ -44,11 +44,12 @@ public class SocketListener {
                 switch (method) {
                     case Protocol.DELIVER_MESSAGE:
                         try {
-                            Usuario usuario1 = (Usuario) ais.readObject();
-                            Usuario usuario2 = (Usuario) ais.readObject();
+                            Usuario usuarioEmisor = (Usuario) ais.readObject();
                             String message = (String) ais.readObject();
-                            deliver(usuario1, usuario2, message);
+                            deliver(usuarioEmisor, message);
+
                         } catch (ClassNotFoundException ex) {
+                            ex.printStackTrace();
                             break;
                         }
                         break;
@@ -77,10 +78,10 @@ public class SocketListener {
         } catch (IOException e) {}
     }
 
-    private void deliver(final Usuario usuarioEmisor, Usuario usuarioReceptor, final String message) {
+    private void deliver(final Usuario usuarioEmisor, final String message) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                listener.deliver_message(usuarioEmisor,usuarioReceptor, message);
+                listener.deliver_message(usuarioEmisor, message);
             }
         });
     }

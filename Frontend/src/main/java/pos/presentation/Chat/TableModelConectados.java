@@ -1,6 +1,6 @@
 
 package pos.presentation.Chat;
-
+import pos.presentation.Chat.Model;
 import pos.logic.Usuario;
 import pos.presentation.AbstractTableModel;
 
@@ -10,9 +10,11 @@ public class TableModelConectados extends AbstractTableModel<Usuario> implements
 
     public static final int ID = 0;
     public static final int MENSAJES = 1;
+    private Model chatModel;
 
-    public TableModelConectados(int[] cols, List<Usuario> rows) {
+    public TableModelConectados(Model chatModel, int[] cols, List<Usuario> rows) {
         super(cols, rows);
+        this.chatModel = chatModel;
     }
 
     @Override
@@ -24,14 +26,21 @@ public class TableModelConectados extends AbstractTableModel<Usuario> implements
 
     @Override
     protected Object getPropetyAt(Usuario e, int col) {
+        // Asegurarse de que el usuario no sea nulo
+        if (e == null) {
+            return null;
+        }
+
         switch (cols[col]) {
             case ID:
-                return e == null ? "" : e.getId();
+                return e.getId();
+
             case MENSAJES:
-                // consultar al modelo global no es ideal aquí; el TableModel normalmente recibe rows y el View
-                // debe actualizar la columna usando el Model. Aquí asumimos que el objeto 'e' no contiene pendientes,
-                // por lo que el caller debe construir rows coincidentes con el estado actual o usar otra strategy.
-                return false;
+                if (this.chatModel == null) {
+                    return false;
+                }
+                return this.chatModel.hasPending(e.getId());
+
             default:
                 return "";
         }
@@ -39,7 +48,7 @@ public class TableModelConectados extends AbstractTableModel<Usuario> implements
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return cols[columnIndex] == MENSAJES;
+        return false;
     }
 
     @Override

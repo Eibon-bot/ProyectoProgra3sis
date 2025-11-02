@@ -77,10 +77,8 @@ public class Controller implements ThreadListener {
     }
 
     @Override
-    public void deliver_message(Usuario usuarioEmisor, Usuario usuarioReceptor, String message) {
-        // añado mensaje pendiente para el remitente (usuarioEmisor)
-        if (usuarioEmisor != null) {
-            model.addPendingMessage(usuarioEmisor.getId(), message);
-        }
+    public void deliver_message(Usuario usuarioEmisor, String message) {
+        if (usuarioEmisor == null || message == null) return;
+        model.addPendingMessage(usuarioEmisor.getId(), message);
     }
 }
