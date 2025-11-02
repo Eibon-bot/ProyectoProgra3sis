@@ -74,10 +74,16 @@ public class DialogoEnviar extends JDialog {
 
         try {
             controller.enviar(mensaje);
-            if (destinatario != null && destinatario.getId() != null) {
-                controller.setMensajesFlag(destinatario.getId(), true);
-            }
-        } catch (Exception ignored) { }
+
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(contentPane,
+                    "Error al enviar el mensaje: " + e.getMessage(),
+                    "Error de Envío",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+        // El diálogo se cierra haya funcionado o no
         dispose();
     }
 

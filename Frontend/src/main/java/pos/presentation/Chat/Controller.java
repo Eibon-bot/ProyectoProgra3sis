@@ -33,15 +33,6 @@ public class Controller implements ThreadListener {
         Service.instance().sendMessage(destino, mensaje);
     }
 
-    public void setMensajesFlag(String userId, boolean value) {
-        if (userId == null) return;
-        if (value) {
-            model.addPendingMessage(userId, "[pendiente]");
-        } else {
-            model.clearPending(userId);
-        }
-    }
-
     public void confirmReceived(String fromId) {
         if (fromId == null) return;
         // quitar solo el primer mensaje pendiente
