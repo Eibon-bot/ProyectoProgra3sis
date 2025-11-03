@@ -26,7 +26,7 @@ public class TableModelConectados extends AbstractTableModel<Usuario> implements
 
     @Override
     protected Object getPropetyAt(Usuario e, int col) {
-        // Asegurarse de que el usuario no sea nulo
+
         if (e == null) {
             return null;
         }

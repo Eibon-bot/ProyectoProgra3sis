@@ -25,7 +25,7 @@ public class Server {
         boolean continuar = true;
         Socket s;
         Worker worker;
-        String sid;  // Session Id
+        String sid;
         while (continuar) {
             try {
                 s = ss.accept();
@@ -41,10 +41,10 @@ public class Server {
                         workers.add(worker);
                         System.out.println("Quedan: " + workers.size());
                         worker.start();
-                        os.writeObject(sid); // send Session Id back
+                        os.writeObject(sid);
                         break;
                     case Protocol.ASYNC:
-                        sid=(String)is.readObject(); // recieves Session Id
+                        sid=(String)is.readObject();
                         System.out.println("ASYNCH: "+sid);
                         join(s,os,is,sid);
                         break;

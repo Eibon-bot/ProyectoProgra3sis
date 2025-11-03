@@ -70,7 +70,7 @@ public class CambiarClave extends JDialog implements PropertyChangeListener
 
 
     private void onCancel() {
-        // add your code here if necessary
+
         dispose();
     }
 

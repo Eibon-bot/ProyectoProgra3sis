@@ -21,7 +21,7 @@ public class Controller {
             prescribirView.setModel(model);
         }
 
-        //Buscar Paciente Metodos
+
         public void searchPacienteNombre(String nombre) throws Exception {
             Paciente p = new Paciente();
             p.setNombre(nombre);

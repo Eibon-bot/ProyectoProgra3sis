@@ -35,9 +35,9 @@ public class Controller implements ThreadListener {
 
     public void confirmReceived(String fromId) {
         if (fromId == null) return;
-        // quitar solo el primer mensaje pendiente
+
         String m = model.popFirstPending(fromId);
-        // si ya no hay pendientes, nada más (vista reflejará cambios vía listeners)
+
     }
 
     public void seleccionarPorId(String userId) {

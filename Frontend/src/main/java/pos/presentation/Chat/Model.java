@@ -14,7 +14,7 @@ public class Model extends AbstractModel {
     private List<Usuario> usuarios = new ArrayList<>();
     private String usuarioSeleccionadoId;
 
-    // mapa userId -> lista de mensajes pendientes
+
     private Map<String, List<String>> pendientes = new HashMap<>();
 
     @Override
@@ -29,7 +29,7 @@ public class Model extends AbstractModel {
     public void setUsuarios(List<Usuario> lista) {
         if (lista == null) lista = new ArrayList<>();
         this.usuarios = lista;
-        // asegurar entradas en el mapa de pendientes
+
         for (Usuario u : lista) {
             if (u != null && !pendientes.containsKey(u.getId())) {
                 pendientes.put(u.getId(), new ArrayList<>());

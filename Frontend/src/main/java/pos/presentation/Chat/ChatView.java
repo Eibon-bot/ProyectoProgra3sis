@@ -47,7 +47,7 @@ public class ChatView implements PropertyChangeListener {
             String userId = (String) tm.getValueAt(modelRow, TableModelConectados.ID);
             if (userId == null || userId.isEmpty()) return;
 
-            // Buscar Usuario en el modelo y pasar el objeto Usuario al diálogo
+
             Usuario destinatario = findUsuarioById(userId);
             if (destinatario == null) {
                 JOptionPane.showMessageDialog(panelchat, "Usuario no disponible.", "Error",
@@ -56,7 +56,7 @@ public class ChatView implements PropertyChangeListener {
             }
 
             DialogoEnviar dlg = new DialogoEnviar();
-            // pasar controller y destinatario
+
             dlg.setController(controller);
             dlg.setDestinatario(destinatario);
             dlg.setLocationRelativeTo(panelchat);
@@ -80,7 +80,7 @@ public class ChatView implements PropertyChangeListener {
             dlg.setController(controller);
             dlg.setRemitente(userId);
 
-            // Mostrar el primer mensaje pendiente (sin consumirlo aquí)
+
             String mensaje = "No hay mensajes";
             if (model != null) {
                 List<String> pend = model.getPendingMessages(userId);
@@ -93,7 +93,7 @@ public class ChatView implements PropertyChangeListener {
             dlg.setLocationRelativeTo(panelchat);
             dlg.setVisible(true);
 
-            // La acción de confirmar (quitar pendiente) la hace DialogoRecibir -> controller.confirmReceived(...)
+
         });
 
     }
@@ -141,11 +141,11 @@ public class ChatView implements PropertyChangeListener {
         if (panelchat == null || tableConectados == null) return;
 
         String prop = evt.getPropertyName();
-        if (model.USUARIOS.equals(prop)) { // <-- constante estática en la clase del modelo
+        if (model.USUARIOS.equals(prop)) {
             tableConectados.setModel(new TableModelConectados(
                     model,
                     new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
-                    new java.util.ArrayList<>(model.getUsuarios()) // pasa la lista nueva
+                    new java.util.ArrayList<>(model.getUsuarios())
             ));
         }
 

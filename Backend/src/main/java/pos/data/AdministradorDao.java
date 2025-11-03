@@ -10,7 +10,7 @@ public class AdministradorDao {
 
     public AdministradorDao() {
         db = Database.instance();
-    }//no tiene crud pq si se agregan se agregn desde el command line
+    }
     public Administrador readPorId(String id) throws Exception {
         String sql = "SELECT id, nombre, clave FROM Administrador WHERE id = ?";
         try (PreparedStatement ps = db.prepareStatement(sql)) {

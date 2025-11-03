@@ -23,7 +23,7 @@ public class RecetaDao {
 
         stm.setString(1, r.getPaciente().getId());
 
-        //aqui estoy dejando que medico sea null pq aun no hay login
+
         if (r.getMedico() != null) {
             stm.setString(2, r.getMedico().getId());
         } else {

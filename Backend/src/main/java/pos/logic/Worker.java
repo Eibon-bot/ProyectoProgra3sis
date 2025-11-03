@@ -428,7 +428,7 @@ public class Worker {
                             srv.notifyUserConnected(this, u);
                             System.out.println("LOGIN ok " + u.getId() + " ASYNC? " + (aos != null));
 
-                            // ⬇️ IMPORTANTE: si el ASYNC ya estaba, mándale la lista ahora
+
                             try { srv.connectedUsers(this); } catch (Exception ignore) {}
 
                             os.writeInt(Protocol.ERROR_NO_ERROR);
@@ -453,7 +453,7 @@ public class Worker {
                     // ================== CHAT (nuevo) ==================
                     case Protocol.SEND_MESSAGE:
                         try {
-                            // En tu Server.sendMessage(Usuario from, Usuario destino, String texto)
+
                             Usuario destino = (Usuario) is.readObject();
                             String texto = (String) is.readObject();
                             srv.sendMessage(usuario, destino, texto);
@@ -482,9 +482,9 @@ public class Worker {
     public void sendMessage(int type, Usuario user, String message) {
         if (as != null) {
             try {
-                aos.writeInt(type);         // p.ej. Protocol.DELIVER_MESSAGE
-                aos.writeObject(user);      // payload: Usuario (remitente)
-                aos.writeObject(message);   // payload: texto
+                aos.writeInt(type);
+                aos.writeObject(user);
+                aos.writeObject(message);
                 aos.flush();
             } catch (IOException e) {
                 System.out.println("Error enviando notificación: " + e.getMessage());
@@ -495,8 +495,8 @@ public class Worker {
     public void sendNotification(int type, Usuario user) {
         if (as != null) {
             try {
-                aos.writeInt(type);    // USER_JOINED / USER_LEFT (tu Server los usa)
-                aos.writeObject(user); // payload: Usuario
+                aos.writeInt(type);
+                aos.writeObject(user);
                 aos.flush();
             } catch (IOException e) {
                 System.out.println("Error enviando notificación: " + e.getMessage());
@@ -504,7 +504,7 @@ public class Worker {
         }
     }
 
-    // ======= (legacy) Métodos que ya tenías; los dejo por compatibilidad =======
+
     public synchronized void sendAsyncUserJoined(String userId){
         if (aos == null) return;
         try {

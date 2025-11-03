@@ -11,8 +11,8 @@ import java.net.Socket;
 
 public class SocketListener {
     ThreadListener listener;
-    String sid; // Session Id
-    Socket as; // Asynchronous Socket
+    String sid;
+    Socket as;
     ObjectOutputStream aos;
     ObjectInputStream ais;
     public SocketListener(ThreadListener listener, String sid) throws Exception {

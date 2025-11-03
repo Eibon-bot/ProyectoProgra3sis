@@ -26,10 +26,10 @@ public class Service {
 
 
     public interface ServiceListener{
-        void onUserList(List<Usuario> users);   // antes List<String>
-        void onUserJoined(Usuario user);        // antes String userId
-        void onUserLeft(Usuario user);          // antes String userId
-        void onMessage(Usuario from, String text); // antes (String fromId, String text)
+        void onUserList(List<Usuario> users);
+        void onUserJoined(Usuario user);
+        void onUserLeft(Usuario user);
+        void onMessage(Usuario from, String text);
     }
 
 
@@ -40,7 +40,7 @@ public class Service {
     public void addListener(ServiceListener l){ listeners.add(l); }
     public void removeListener(ServiceListener l){ listeners.remove(l); }
 
-    String sid; // Session Id
+    String sid;
 
     private Service() {
         try {
@@ -64,7 +64,7 @@ public class Service {
         aos = new ObjectOutputStream(as.getOutputStream());
         ais = new ObjectInputStream(as.getInputStream());
         aos.writeInt(Protocol.ASYNC);
-        aos.writeObject(sid); // ¡clave! empata con el SYNC
+        aos.writeObject(sid);
         aos.flush();
 
         Thread t = new Thread(this::asyncLoop, "async-listener");
@@ -79,19 +79,19 @@ public class Service {
                 switch (ev){
                     case Protocol.USER_LIST -> {
                         @SuppressWarnings("unchecked")
-                        List<Usuario> users = (List<Usuario>) ais.readObject(); // ahora lista de Usuario
+                        List<Usuario> users = (List<Usuario>) ais.readObject();
                         for (var l: listeners) l.onUserList(users);
                     }
                     case Protocol.USER_JOINED -> {
-                        Usuario u = (Usuario) ais.readObject();   // ahora Usuario
+                        Usuario u = (Usuario) ais.readObject();
                         for (var l: listeners) l.onUserJoined(u);
                     }
                     case Protocol.USER_LEFT -> {
                         Object payload = ais.readObject();
-                        // Servidor envía Usuario; si algún cliente viejo manda String, soportamos ambos:
+
                         Usuario u = (payload instanceof Usuario)
                                 ? (Usuario) payload
-                                : fallbackUsuario((String) payload); // crea Usuario con solo id
+                                : fallbackUsuario((String) payload);
                         for (var l: listeners) l.onUserLeft(u);
                     }
                     case Protocol.DELIVER_MESSAGE -> {
@@ -100,7 +100,7 @@ public class Service {
 
                         Usuario from = (fromObj instanceof Usuario)
                                 ? (Usuario) fromObj
-                                : fallbackUsuario((String) fromObj); // compatibilidad si llegara String
+                                : fallbackUsuario((String) fromObj);
                         for (var l: listeners) l.onMessage(from, text);
                     }
                 }
@@ -117,7 +117,7 @@ public class Service {
 
     public void sendMessage(Usuario to, String text) throws Exception {
         os.writeInt(Protocol.SEND_MESSAGE);
-        os.writeObject(to);     // ahora enviamos Usuario destino
+        os.writeObject(to);
         os.writeObject(text);
         os.flush();
         if (is.readInt() != Protocol.ERROR_NO_ERROR)
@@ -483,14 +483,11 @@ public class Service {
         os.writeObject(clave);
         os.flush();
 
-        int code = is.readInt();            // ← primero lee el código
+        int code = is.readInt();
         if (code == Protocol.ERROR_NO_ERROR) {
             Usuario u = (Usuario) is.readObject();
 
-//            // Abre el canal ASYNC solo si no existe aún:
-//            if (as == null) {
-//                openAsyncChannel();         // ← ahora sí, después de éxito
-//            }
+//
 
             return u;
         } else {

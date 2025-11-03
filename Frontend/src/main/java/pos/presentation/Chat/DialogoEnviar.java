@@ -53,7 +53,7 @@ public class DialogoEnviar extends JDialog {
         this.controller = c;
     }
 
-    // Corregido: recibir Usuario en lugar de String
+
     public void setDestinatario(Usuario u) {
         this.destinatario = u;
         if (labelNombreAEnviar != null) {
@@ -83,7 +83,7 @@ public class DialogoEnviar extends JDialog {
                     JOptionPane.ERROR_MESSAGE);
         }
 
-        // El diálogo se cierra haya funcionado o no
+
         dispose();
     }
 

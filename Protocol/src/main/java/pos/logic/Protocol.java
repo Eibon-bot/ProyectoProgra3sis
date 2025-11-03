@@ -68,13 +68,13 @@ public class Protocol {
 
 
     // --- USUARIOS (ASYNC) ---
-    public static final int USER_LIST   = 300; // payload: List<Usuario>
-    public static final int USER_JOINED = 301; // payload: Usuario
-    public static final int USER_LEFT   = 302; // payload: String userId
+    public static final int USER_LIST   = 300;
+    public static final int USER_JOINED = 301;
+    public static final int USER_LEFT   = 302;
 
     // --- CHAT ---
-    public static final int SEND_MESSAGE    = 400; // SYNC: (toId, text)
-    public static final int DELIVER_MESSAGE = 401; // ASYNC: (fromId, text)
+    public static final int SEND_MESSAGE    = 400;
+    public static final int DELIVER_MESSAGE = 401;
 
 
 }

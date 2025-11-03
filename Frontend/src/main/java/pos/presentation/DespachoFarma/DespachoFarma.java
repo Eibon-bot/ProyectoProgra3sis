@@ -165,9 +165,9 @@ public class DespachoFarma implements PropertyChangeListener {
                 int[] columnas = {
                         TableModel.PACIENTE_ID,
                         TableModel.PACIENTE_NOMBRE,
-//                        TableModel.MEDICO_ID,
+
                         TableModel.FECHA_EMISION,
-//                        TableModel.FECHA_RETIRO,
+
                         TableModel.ESTADO
                 };
                 tableRecetasPaciente.setModel(new TableModel(columnas, model.getRecetasPaciente()));
