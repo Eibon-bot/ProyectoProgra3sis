@@ -123,17 +123,7 @@ public class ChatView implements PropertyChangeListener {
         return null;
     }
 
-    private TableModelConectados ensureTableModel() {
-        if (!(tableConectados.getModel() instanceof TableModelConectados)) {
-            tableConectados.setModel(new TableModelConectados(
-                    model,
-                    new int[]{TableModelConectados.ID, TableModelConectados.MENSAJES},
-                    new java.util.ArrayList<>()
-            ));
-        }
 
-        return (TableModelConectados) tableConectados.getModel();
-    }
 
 
     @Override

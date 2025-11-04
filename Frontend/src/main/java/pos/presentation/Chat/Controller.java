@@ -7,7 +7,6 @@ import pos.presentation.ThreadListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Controller implements ThreadListener {
     private Model model;

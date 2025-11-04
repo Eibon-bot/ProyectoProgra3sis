@@ -79,20 +79,6 @@ public class MedicamentoDao {
     }
 
 
-//    public List<Medicamento> findByNombre(String nombre) {
-//        List<Medicamento> resultado = new ArrayList<>();
-//        try {
-//            String sql = "select * from Medicamento m where m.nombre like ?";
-//            PreparedStatement stm = db.prepareStatement(sql);
-//            stm.setString(1, "%" + nombre + "%");
-//            ResultSet rs = db.executeQuery(stm);
-//            while (rs.next()) {
-//                resultado.add(from(rs, "m"));
-//            }
-//        } catch (SQLException ex) {
-//        }
-//        return resultado;
-//    }
 
     private Medicamento from(ResultSet rs) throws SQLException {
         Medicamento m = new Medicamento();

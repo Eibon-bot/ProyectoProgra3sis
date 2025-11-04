@@ -67,12 +67,12 @@ public class Protocol {
     public static final int DISCONNECT=99;
 
 
-    // --- USUARIOS (ASYNC) ---
+
     public static final int USER_LIST   = 300;
     public static final int USER_JOINED = 301;
     public static final int USER_LEFT   = 302;
 
-    // --- CHAT ---
+
     public static final int SEND_MESSAGE    = 400;
     public static final int DELIVER_MESSAGE = 401;
 

@@ -20,26 +20,6 @@ public class Service {
 
 
 
-    private Socket as;
-    private ObjectOutputStream aos;
-    private ObjectInputStream ais;
-
-
-    public interface ServiceListener{
-        void onUserList(List<Usuario> users);
-        void onUserJoined(Usuario user);
-        void onUserLeft(Usuario user);
-        void onMessage(Usuario from, String text);
-    }
-
-
-
-
-
-    private final List<ServiceListener> listeners = new CopyOnWriteArrayList<>();
-    public void addListener(ServiceListener l){ listeners.add(l); }
-    public void removeListener(ServiceListener l){ listeners.remove(l); }
-
     String sid;
 
     private Service() {
@@ -57,60 +37,6 @@ public class Service {
             System.err.println("No se pudo conectar al servidor");
             System.exit(-1);
         }
-    }
-
-    private void openAsyncChannel() throws Exception {
-        as = new Socket(Protocol.SERVER, Protocol.PORT);
-        aos = new ObjectOutputStream(as.getOutputStream());
-        ais = new ObjectInputStream(as.getInputStream());
-        aos.writeInt(Protocol.ASYNC);
-        aos.writeObject(sid);
-        aos.flush();
-
-        Thread t = new Thread(this::asyncLoop, "async-listener");
-        t.setDaemon(true);
-        t.start();
-    }
-
-    private void asyncLoop(){
-        try {
-            while (true){
-                int ev = ais.readInt();
-                switch (ev){
-                    case Protocol.USER_LIST -> {
-                        @SuppressWarnings("unchecked")
-                        List<Usuario> users = (List<Usuario>) ais.readObject();
-                        for (var l: listeners) l.onUserList(users);
-                    }
-                    case Protocol.USER_JOINED -> {
-                        Usuario u = (Usuario) ais.readObject();
-                        for (var l: listeners) l.onUserJoined(u);
-                    }
-                    case Protocol.USER_LEFT -> {
-                        Object payload = ais.readObject();
-
-                        Usuario u = (payload instanceof Usuario)
-                                ? (Usuario) payload
-                                : fallbackUsuario((String) payload);
-                        for (var l: listeners) l.onUserLeft(u);
-                    }
-                    case Protocol.DELIVER_MESSAGE -> {
-                        Object fromObj = ais.readObject();
-                        String text = (String) ais.readObject();
-
-                        Usuario from = (fromObj instanceof Usuario)
-                                ? (Usuario) fromObj
-                                : fallbackUsuario((String) fromObj);
-                        for (var l: listeners) l.onMessage(from, text);
-                    }
-                }
-            }
-        } catch (Exception ignored) {}
-    }
-
-
-    private static Usuario fallbackUsuario(String id) {
-        return new Usuario(id, null, null,null) {};
     }
 
 
@@ -476,7 +402,7 @@ public class Service {
     }
 
     // ================== LOGIN / SEGURIDAD ==================
-    // Service.java
+
     public Usuario login(String id, String clave) throws Exception {
         os.writeInt(Protocol.LOGIN);
         os.writeObject(id);
@@ -487,7 +413,6 @@ public class Service {
         if (code == Protocol.ERROR_NO_ERROR) {
             Usuario u = (Usuario) is.readObject();
 
-//
 
             return u;
         } else {

@@ -57,26 +57,7 @@ public class Server {
         }
     }
 
-//    public void remove(Worker w) {
-//        workers.remove(w);
-//        String uid = sidToUser.remove(w.sid);
-//        if (uid != null) {
-//            byUser.remove(uid);
-//            broadcastUserLeft(uid);  // NUEVO
-//        }
-//        System.out.println("Quedan: " + workers.size());
-//    }
 
-//    void broadcastUserJoined(String userId){
-//        for (Worker w: workers) w.sendAsyncUserJoined(userId);
-//    }
-//    void broadcastUserLeft(String userId){
-//        for (Worker w: workers) w.sendAsyncUserLeft(userId);
-//    }
-//    void sendInitialUserList(Worker w){
-//        List<String> list = new ArrayList<>(byUser.keySet());
-//        w.sendAsyncUserList(list);
-//    }
 
 
 
@@ -101,7 +82,7 @@ public class Server {
     public void join(Socket as, ObjectOutputStream aos, ObjectInputStream ais, String sid) {
         for (Worker w: workers) {
             if (w.sid.equals(sid)) {
-                if (w.aos != null) { // <- ya hay canal async para este worker
+                if (w.aos != null) {
                     System.out.println("Ignorando ASYNC duplicado para sid " + sid);
                     try { as.close(); } catch (IOException ignored) {}
                     return;
@@ -156,9 +137,4 @@ public class Server {
         }
     }
 
-//    public void deliver_message(Worker from, String message){
-//        for(Worker w:workers){
-//            if (w!=from) w.deliver_message(message);
-//        }
-//    }
 }

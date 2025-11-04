@@ -505,40 +505,5 @@ public class Worker {
     }
 
 
-    public synchronized void sendAsyncUserJoined(String userId){
-        if (aos == null) return;
-        try {
-            aos.writeInt(Protocol.USER_JOINED);
-            aos.writeObject(userId);
-            aos.flush();
-        } catch(Exception ignored){}
-    }
 
-    public synchronized void sendAsyncUserLeft(String userId){
-        if (aos == null) return;
-        try {
-            aos.writeInt(Protocol.USER_LEFT);
-            aos.writeObject(userId);
-            aos.flush();
-        } catch(Exception ignored){}
-    }
-
-    public synchronized void sendAsyncUserList(List<String> users){
-        if (aos == null) return;
-        try {
-            aos.writeInt(Protocol.USER_LIST);
-            aos.writeObject(users);
-            aos.flush();
-        } catch(Exception ignored){}
-    }
-
-    public synchronized void deliver_message(String fromId, String text){
-        if (aos == null) return;
-        try {
-            aos.writeInt(Protocol.DELIVER_MESSAGE);
-            aos.writeObject(fromId);
-            aos.writeObject(text);
-            aos.flush();
-        } catch(Exception ignored){}
-    }
 }
